@@ -33,6 +33,10 @@ class ChatDB extends Dexie {
 		});
 		return id;
 	}
+
+	async get() {
+		return this.threads.reverse().sortBy("updated_at");
+	}
 }
 
 export const db = new ChatDB();
