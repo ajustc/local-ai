@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { ChatMessage } from "~/components/ChatMessage";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
+import ollama from "ollama";
 
 type Message = {
 	role: "user" | "assistant";
@@ -8,8 +10,30 @@ type Message = {
 };
 
 const ChatPage = () => {
+	const [messageInput, setMessageInput] = useState("");
+	const [streamMessage, setStreamMessage] = useState("");
+
 	const handleSubmit = async () => {
 		alert("chat");
+
+		const stream = await ollama.chat({
+			model: "deepseek-r1:1.5b",
+			messages: [
+				{
+					role: "user",
+					content: messageInput.trim(),
+				},
+			],
+			stream: true,
+		});
+
+		let fullContent = "";
+
+		for await (const part of stream) {
+			const messageContent = part.message.content;
+			fullContent += messageContent;
+			setStreamMessage(fullContent);
+		}
 	};
 
 	// This would typically come from a state management solution or props
@@ -32,11 +56,13 @@ const ChatPage = () => {
 					{chatHistory.map((message, index) => (
 						<ChatMessage key={index} role={message.role} content={message.content} />
 					))}
+
+					{!!streamMessage && <ChatMessage role="assistant" content={streamMessage} />}
 				</div>
 			</main>
 			<footer className="border-t p-4">
 				<div className="max-w-3xl mx-auto flex gap-2">
-					<Textarea className="flex-1" placeholder="Type your message here..." rows={5} />
+					<Textarea className="flex-1" placeholder="Type your message here..." rows={5} value={messageInput} onChange={(e) => setMessageInput(e.target.value)} />
 					<Button onClick={handleSubmit} type="button">
 						Send
 					</Button>
