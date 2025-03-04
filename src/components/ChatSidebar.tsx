@@ -19,7 +19,7 @@ export const ChatSidebar = () => {
 
 	const location = useLocation();
 
-	const threads = useLiveQuery(() => db.get(), []);
+	const threads = useLiveQuery(() => db.getThreads(), []);
 
 	const handleToggleTheme = () => {
 		if (theme === "dark") {
@@ -30,7 +30,7 @@ export const ChatSidebar = () => {
 	};
 
 	const handleCreateThread = async () => {
-		const threadId = await db.create(textInput);
+		const threadId = await db.createThread(textInput);
 		console.log("Create thread:", textInput);
 		setDiaglogIsOpen(false);
 	};
