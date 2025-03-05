@@ -70,6 +70,10 @@ class ChatDB extends Dexie {
 			});
 		})
 	}
+
+	async getMessagesForThread(threadId: string) {
+		return this.messages.where("thread_id").equals(threadId).sortBy("created_at");
+	}
 }
 
 export const db = new ChatDB();
