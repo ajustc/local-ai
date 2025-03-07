@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { ChatMessage } from "~/components/ChatMessage";
 import { Button } from "~/components/ui/button";
 import { Textarea } from "~/components/ui/textarea";
@@ -8,15 +8,12 @@ import { db } from "~/lib/dexie";
 import { useParams } from "react-router";
 import { useLiveQuery } from "dexie-react-hooks";
 
-type Message = {
-	role: "user" | "assistant";
-	content: string;
-};
-
 const ChatPage = () => {
 	const [messageInput, setMessageInput] = useState("");
 	const [streamMessage, setStreamMessage] = useState("");
 	const [streamThought, setStreamThought] = useState("");
+
+	const scrollToBottomRef = useRef<HTMLDivElement>(null);
 
 	const params = useParams();
 
@@ -41,6 +38,8 @@ const ChatPage = () => {
 			],
 			stream: true,
 		});
+
+		setMessageInput("");
 
 		let fullContent = "";
 		let fullThought = "";
@@ -76,6 +75,14 @@ const ChatPage = () => {
 		setStreamThought("");
 	};
 
+	const handleScrollToBottom = () => {
+		scrollToBottomRef?.current?.scrollIntoView({ behavior: "smooth" });
+	}
+
+	useLayoutEffect(() => {
+		handleScrollToBottom()
+	}, [streamMessage, streamThought, messages])
+
 	return (
 		<div className="flex flex-col flex-1">
 			<header className="flex items-center px-4 h-16 border-b">
@@ -90,6 +97,8 @@ const ChatPage = () => {
 					{!!streamThought && <ThoughtMessage thought={streamThought} />}
 
 					{!!streamMessage && <ChatMessage role="assistant" content={streamMessage} />}
+
+					<div ref={scrollToBottomRef}></div>
 				</div>
 			</main>
 			<footer className="border-t p-4">
